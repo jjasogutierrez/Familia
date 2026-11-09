@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Familia">
+<title>Familia</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: rgba(0,0,0,0); }
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: #F4F1EC; color: #2B2B2B;
+    -webkit-user-select: none; user-select: none;
+  }
+  button { font-family: inherit; border: 0; cursor: pointer; }
+
+  /* ---------- Cabecera ---------- */
+  #cabecera {
+    height: 70px; padding: 0 20px; background: #2E3A59; color: #fff;
+    display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
+  }
+  #titulo { font-size: 26px; font-weight: 700; }
+  #fecha { font-size: 20px; margin-left: 18px; opacity: .85; -webkit-flex: 1; flex: 1; }
+  #reloj { font-size: 34px; font-weight: 700; }
+
+  /* ---------- Cuerpo ---------- */
+  #cuerpo {
+    position: absolute; top: 70px; bottom: 26px; left: 0; right: 0;
+    display: -webkit-flex; display: flex; padding: 12px; 
+  }
+  .panel { background: #fff; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+  #agenda {
+    width: 36%; margin-right: 12px; padding: 14px 16px;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  #agenda h2 { margin: 0 0 8px; font-size: 22px; }
+  .dia { margin-bottom: 12px; }
+  .dia-titulo { font-size: 15px; font-weight: 700; text-transform: uppercase; color: #8A8A8A; letter-spacing: .5px; margin-bottom: 4px; }
+  .dia.hoy .dia-titulo { color: #2E3A59; font-size: 17px; }
+  .evento { padding: 7px 10px; border-left: 4px solid #2E3A59; background: #F2F4F8; border-radius: 6px; margin-bottom: 5px; font-size: 17px; }
+  .dia.hoy .evento { font-size: 19px; }
+  .evento .h { font-weight: 700; margin-right: 6px; }
+  .evento .l { display: block; font-size: 13px; color: #777; }
+  .vacio { color: #BBB; font-size: 15px; }
+  .aviso { background: #FFF3CD; color: #7A5B00; padding: 8px 10px; border-radius: 8px; font-size: 14px; margin-bottom: 10px; }
+
+  #ninas { -webkit-flex: 1; flex: 1; display: -webkit-flex; display: flex; }
+  .nina {
+    -webkit-flex: 1; flex: 1; margin-left: 12px; padding: 12px;
+    display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column;
+  }
+  .nina:first-child { margin-left: 0; }
+  .nina-cab { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; margin-bottom: 10px; }
+  .nina-emoji { font-size: 40px; margin-right: 8px; }
+  .nina-nombre { font-size: 26px; font-weight: 800; -webkit-flex: 1; flex: 1; }
+  .nina-puntos { font-size: 30px; font-weight: 800; color: #fff; padding: 4px 14px; border-radius: 30px; }
+  .nina-puntos small { font-size: 14px; font-weight: 600; }
+  .habitos { -webkit-flex: 1; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .habito {
+    display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
+    width: 100%; min-height: 58px; margin-bottom: 8px; padding: 6px 12px;
+    background: #F6F6F6; border-radius: 14px; text-align: left; font-size: 19px; color: #2B2B2B;
+  }
+  .habito .e { font-size: 30px; width: 44px; }
+  .habito .n { -webkit-flex: 1; flex: 1; }
+  .habito .p { font-weight: 700; color: #999; font-size: 16px; }
+  .habito.hecho { color: #fff; }
+  .habito.hecho .p { color: #fff; }
+  .btn-premios {
+    margin-top: 6px; height: 54px; border-radius: 14px; font-size: 20px; font-weight: 700; color: #fff;
+  }
+
+  /* ---------- Pie ---------- */
+  #pie { position: absolute; bottom: 0; left: 0; right: 0; height: 26px; line-height: 26px; text-align: center; font-size: 12px; color: #999; }
+  #pie.error { background: #E74C3C; color: #fff; }
+
+  /* ---------- Modal ---------- */
+  #modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); z-index: 10; }
+  #caja {
+    position: absolute; top: 50%; left: 50%; width: 520px; max-width: 94%; max-height: 90%;
+    -webkit-transform: translate(-50%, -50%); transform: translate(-50%, -50%);
+    background: #fff; border-radius: 20px; padding: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  #caja h3 { margin: 0 0 12px; font-size: 24px; text-align: center; }
+  .premio {
+    display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
+    width: 100%; min-height: 60px; margin-bottom: 8px; padding: 6px 14px; border-radius: 14px;
+    background: #F6F6F6; font-size: 20px; text-align: left; color: #2B2B2B;
+  }
+  .premio .e { font-size: 32px; width: 48px; }
+  .premio .n { -webkit-flex: 1; flex: 1; }
+  .premio .c { font-weight: 800; }
+  .premio[disabled] { opacity: .35; }
+  .cerrar { width: 100%; height: 52px; margin-top: 6px; border-radius: 14px; background: #DDD; font-size: 19px; }
+  .pin-vista { text-align: center; font-size: 38px; letter-spacing: 14px; height: 50px; margin-bottom: 10px; }
+  .teclado { overflow: hidden; }
+  .tecla {
+    float: left; width: 31.33%; margin: 1%; height: 66px; border-radius: 14px;
+    background: #F0F0F0; font-size: 28px; font-weight: 700; color: #2B2B2B;
+  }
+  .tecla.ok { background: #27AE60; color: #fff; }
+  .pin-error { color: #E74C3C; text-align: center; height: 22px; font-weight: 700; }
+
+  /* ---------- Celebración ---------- */
+  #fiesta {
+    position: fixed; top: 50%; left: 50%; z-index: 20; text-align: center; pointer-events: none;
+    -webkit-transform: translate(-50%, -50%) scale(.3); transform: translate(-50%, -50%) scale(.3);
+    opacity: 0; -webkit-transition: all .35s ease-out; transition: all .35s ease-out;
+  }
+  #fiesta.ver { opacity: 1; -webkit-transform: translate(-50%, -50%) scale(1); transform: translate(-50%, -50%) scale(1); }
+  #fiesta .e { font-size: 130px; line-height: 1; }
+  #fiesta .t { font-size: 46px; font-weight: 900; color: #fff; text-shadow: 0 3px 10px rgba(0,0,0,.4); }
+
+  .oculto { display: none; }
+
+  /* ---------- Vertical ---------- */
+  @media (orientation: portrait) {
+    #cuerpo { -webkit-flex-direction: column; flex-direction: column; }
+    #agenda { width: auto; height: 34%; margin: 0 0 12px 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="cabecera">
+  <div id="titulo">Familia</div>
+  <div id="fecha"></div>
+  <div id="reloj"></div>
+</div>
+
+<div id="cuerpo">
+  <div id="agenda" class="panel"><h2>📅 Agenda</h2><div class="vacio">Cargando…</div></div>
+  <div id="ninas"></div>
+</div>
+
+<div id="pie">Cargando…</div>
+<div id="modal" class="oculto"><div id="caja"></div></div>
+<div id="fiesta"><div class="e"></div><div class="t"></div></div>
+
+<script>
+// =============================================================
+//  CONFIGURACIÓN — pega aquí la URL de tu aplicación web (termina en /exec)
+// =============================================================
+var API_URL = 'https://script.google.com/macros/s/AKfycby2nbH8iAilBF4HI1BSdQtOQGiRwzoXVbVKYCDZjWNvffRYWnLh9XcCj5XyKIr4NCHRwA/exec';
+
+var REFRESCO_MS = 3 * 60 * 1000;   // recarga datos cada 3 minutos
+var datos = null;
+var diaCargado = '';
+var contadorJsonp = 0;
+
+// ---------- Utilidades ----------
+function $(id) { return document.getElementById(id); }
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function dos(n) { return n < 10 ? '0' + n : '' + n; }
+
+function jsonp(params, ok, fallo) {
+  if (API_URL.indexOf('http') !== 0) { fallo('Falta configurar API_URL en index.html'); return; }
+  var nombre = 'cb_' + (++contadorJsonp) + '_' + new Date().getTime();
+  var s = document.createElement('script');
+  var terminado = false;
+  var temporizador = setTimeout(function () { fin(); fallo('Sin respuesta del servidor'); }, 25000);
+  function fin() {
+    terminado = true; clearTimeout(temporizador);
+    try { delete window[nombre]; } catch (e) { window[nombre] = undefined; }
+    if (s.parentNode) s.parentNode.removeChild(s);
+  }
+  window[nombre] = function (r) {
+    if (terminado) return; fin();
+    if (r && r.ok) ok(r); else fallo((r && r.error) || 'Error desconocido');
+  };
+  var q = [];
+  for (var k in params) { if (params.hasOwnProperty(k)) q.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k])); }
+  q.push('callback=' + nombre);
+  s.src = API_URL + (API_URL.indexOf('?') < 0 ? '?' : '&') + q.join('&');
+  s.onerror = function () { if (!terminado) { fin(); fallo('No se pudo conectar'); } };
+  document.body.appendChild(s);
+}
+
+function pie(texto, esError) {
+  var p = $('pie'); p.innerHTML = esc(texto); p.className = esError ? 'error' : '';
+}
+
+// ---------- Reloj ----------
+function reloj() {
+  var d = new Date();
+  $('reloj').innerHTML = dos(d.getHours()) + ':' + dos(d.getMinutes());
+  var hoy = d.getFullYear() + '-' + dos(d.getMonth() + 1) + '-' + dos(d.getDate());
+  if (diaCargado && hoy !== diaCargado) cargar(); // cambio de día: se resetean los hábitos
+}
+
+// ---------- Carga de datos ----------
+function cargar() {
+  jsonp({ accion: 'estado' }, function (r) {
+    datos = r; diaCargado = r.hoy;
+    pintar();
+    var d = new Date();
+    pie('Actualizado a las ' + dos(d.getHours()) + ':' + dos(d.getMinutes()));
+  }, function (err) {
+    pie('⚠️ ' + err + ' — reintentando…', true);
+  });
+}
+
+// ---------- Pintado ----------
+function pintar() {
+  $('titulo').innerHTML = esc(datos.titulo);
+  $('fecha').innerHTML = esc(datos.fechaLarga);
+  pintarAgenda();
+  pintarNinas();
+}
+
+function pintarAgenda() {
+  var a = datos.agenda || { dias: [] };
+  var h = '<h2>📅 Agenda</h2>';
+  if (a.aviso) h += '<div class="aviso">' + esc(a.aviso) + '</div>';
+  for (var i = 0; i < a.dias.length; i++) {
+    var d = a.dias[i];
+    h += '<div class="dia' + (i === 0 ? ' hoy' : '') + '"><div class="dia-titulo">' + esc(d.etiqueta) + '</div>';
+    if (!d.eventos.length) h += '<div class="vacio">' + (i === 0 ? 'Nada programado' : '—') + '</div>';
+    for (var j = 0; j < d.eventos.length; j++) {
+      var e = d.eventos[j];
+      h += '<div class="evento">' + (e.todoDia ? '<span class="h">Todo el día</span>' :
+        '<span class="h">' + esc(e.hora) + '</span>') + esc(e.titulo) +
+        (e.lugar ? '<span class="l">📍 ' + esc(e.lugar) + '</span>' : '') + '</div>';
+    }
+    h += '</div>';
+  }
+  $('agenda').innerHTML = h;
+}
+
+function pintarNinas() {
+  var h = '';
+  for (var i = 0; i < datos.ninas.length; i++) {
+    var n = datos.ninas[i];
+    h += '<div class="nina panel">' +
+      '<div class="nina-cab"><span class="nina-emoji">' + esc(n.emoji) + '</span>' +
+      '<span class="nina-nombre">' + esc(n.nombre) + '</span>' +
+      '<span class="nina-puntos" style="background:' + esc(n.color) + '">' + n.puntos + ' <small>pts</small></span></div>' +
+      '<div class="habitos">';
+    for (var j = 0; j < n.habitos.length; j++) {
+      var hb = n.habitos[j];
+      h += '<button class="habito' + (hb.hecho ? ' hecho' : '') + '"' +
+        (hb.hecho ? ' style="background:' + esc(n.color) + '"' : '') +
+        ' data-accion="habito" data-n="' + i + '" data-h="' + j + '">' +
+        '<span class="e">' + (hb.hecho ? '✅' : esc(hb.emoji)) + '</span>' +
+        '<span class="n">' + esc(hb.nombre) + '</span>' +
+        '<span class="p">+' + hb.puntos + '</span></button>';
+    }
+    h += '</div><button class="btn-premios" style="background:' + esc(n.color) + '" data-accion="premios" data-n="' + i + '">🎁 Premios</button></div>';
+  }
+  $('ninas').innerHTML = h;
+}
+
+// ---------- Celebración ----------
+function fiesta(emoji, texto) {
+  var f = $('fiesta');
+  f.getElementsByTagName('div')[0].innerHTML = esc(emoji);
+  f.getElementsByTagName('div')[1].innerHTML = esc(texto);
+  f.className = 'ver';
+  setTimeout(function () { f.className = ''; }, 1300);
+}
+
+// ---------- Modal ----------
+function abrirModal(html) { $('caja').innerHTML = html; $('modal').className = ''; }
+function cerrarModal() { $('modal').className = 'oculto'; $('caja').innerHTML = ''; }
+
+var pinActual = '', pinAlAceptar = null;
+function pedirPin(titulo, alAceptar) {
+  pinActual = ''; pinAlAceptar = alAceptar;
+  var t = '';
+  var teclas = ['1','2','3','4','5','6','7','8','9','⌫','0','OK'];
+  for (var i = 0; i < teclas.length; i++) {
+    t += '<button class="tecla' + (teclas[i] === 'OK' ? ' ok' : '') + '" data-accion="tecla" data-t="' + teclas[i] + '">' + teclas[i] + '</button>';
+  }
+  abrirModal('<h3>' + esc(titulo) + '</h3><div class="pin-vista" id="pinVista"></div>' +
+    '<div class="pin-error" id="pinError"></div><div class="teclado">' + t + '</div>' +
+    '<button class="cerrar" data-accion="cerrar">Cancelar</button>');
+}
+function tecla(t) {
+  if (t === '⌫') pinActual = pinActual.slice(0, -1);
+  else if (t === 'OK') { if (pinAlAceptar) pinAlAceptar(pinActual); return; }
+  else if (pinActual.length < 8) pinActual += t;
+  var puntos = ''; for (var i = 0; i < pinActual.length; i++) puntos += '•';
+  $('pinVista').innerHTML = puntos; $('pinError').innerHTML = '';
+}
+
+// ---------- Acciones ----------
+function tocarHabito(ni, hi) {
+  var n = datos.ninas[ni], hb = n.habitos[hi];
+  if (!hb.hecho) {
+    hb.hecho = true; n.puntos += hb.puntos; pintarNinas();       // respuesta inmediata
+    fiesta(hb.emoji || '⭐', '¡+' + hb.puntos + ' ' + n.nombre + '!');
+    jsonp({ accion: 'marcar', nina: n.nombre, habito: hb.nombre }, function () { cargar(); },
+      function (err) { pie('⚠️ No se guardó: ' + err, true); cargar(); });
+  } else {
+    pedirPin('Desmarcar "' + hb.nombre + '" — PIN de papá o mamá', function (pin) {
+      jsonp({ accion: 'desmarcar', nina: n.nombre, habito: hb.nombre, pin: pin },
+        function () { cerrarModal(); cargar(); },
+        function (err) { $('pinError').innerHTML = esc(err); pinActual = ''; $('pinVista').innerHTML = ''; });
+    });
+  }
+}
+
+function verPremios(ni) {
+  var n = datos.ninas[ni];
+  var h = '<h3>🎁 Premios de ' + esc(n.nombre) + ' — ' + n.puntos + ' pts</h3>';
+  for (var i = 0; i < datos.premios.length; i++) {
+    var p = datos.premios[i];
+    h += '<button class="premio" data-accion="premio" data-n="' + ni + '" data-p="' + i + '"' +
+      (n.puntos < p.coste ? ' disabled' : '') + '><span class="e">' + esc(p.emoji) + '</span>' +
+      '<span class="n">' + esc(p.nombre) + '</span><span class="c">' + p.coste + ' pts</span></button>';
+  }
+  if (!datos.premios.length) h += '<div class="vacio">Aún no hay premios en la hoja.</div>';
+  abrirModal(h + '<button class="cerrar" data-accion="cerrar">Cerrar</button>');
+}
+
+function canjear(ni, pi) {
+  var n = datos.ninas[ni], p = datos.premios[pi];
+  if (n.puntos < p.coste) return;
+  pedirPin(p.emoji + ' ' + p.nombre + ' (' + p.coste + ' pts) — PIN de papá o mamá', function (pin) {
+    jsonp({ accion: 'canjear', nina: n.nombre, premio: p.nombre, pin: pin },
+      function () { cerrarModal(); fiesta('🎉', '¡' + p.nombre + '!'); cargar(); },
+      function (err) { $('pinError').innerHTML = esc(err); pinActual = ''; $('pinVista').innerHTML = ''; });
+  });
+}
+
+// ---------- Gestión de toques (un solo listener) ----------
+document.addEventListener('click', function (ev) {
+  var el = ev.target;
+  while (el && el !== document && !el.getAttribute('data-accion')) el = el.parentNode;
+  if (!el || el === document) {
+    if (ev.target === $('modal')) cerrarModal();
+    return;
+  }
+  if (el.disabled) return;
+  var a = el.getAttribute('data-accion');
+  var ni = parseInt(el.getAttribute('data-n'), 10);
+  if (a === 'habito') tocarHabito(ni, parseInt(el.getAttribute('data-h'), 10));
+  else if (a === 'premios') verPremios(ni);
+  else if (a === 'premio') canjear(ni, parseInt(el.getAttribute('data-p'), 10));
+  else if (a === 'tecla') tecla(el.getAttribute('data-t'));
+  else if (a === 'cerrar') cerrarModal();
+}, false);
+
+// ---------- Arranque ----------
+reloj();
+setInterval(reloj, 20000);
+cargar();
+setInterval(cargar, REFRESCO_MS);
+</script>
+</body>
+</html>
